@@ -421,7 +421,16 @@ module Searchkick
 
         # filters
         filters = where_filters(options[:where])
-        set_filters(payload, filters) if filters.any?
+
+        if filters.any?
+          set_filters(payload, filters)
+
+          # This is just an experiment to check my use case for adding the `relation` parameter to this key
+          availabilities_range_filter = filters.detect { |f| f.has_key?(:range) && f[:range].has_key?(:availabilities) }
+          if availabilities_range_filter.present?
+            availabilities_range_filter[:range][:availabilities].merge!(relation: "contains")
+          end 
+        end
 
         # aggregations
         set_aggregations(payload) if options[:aggs]
